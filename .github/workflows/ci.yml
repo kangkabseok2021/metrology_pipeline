@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --extra dev --frozen
+      - run: uv run ruff check src/ tests/
+      - run: uv run ruff format --check src/ tests/
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --extra dev --frozen
+      - run: uv run mypy src/ --strict
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --extra dev --frozen
+      - run: uv run pytest tests/ -v --tb=short -m "not benchmark and not gpu"
+
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --extra dev --frozen
+      - run: uv run pytest tests/benchmarks/ -v --benchmark-json=benchmark-results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-results.json
