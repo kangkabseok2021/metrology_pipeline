@@ -47,7 +47,7 @@ def process_single_frame(
     t0 = time.perf_counter()
     frame = np.load(frame_path).astype(np.float32)
     detector = MorphologicalDetector()
-    detector._cx.MIN_WEIGHT_SUM = 1e-6  # type: ignore[attr-defined]
+    detector._cx.MIN_WEIGHT_SUM = 1e-6
     detections = detector.detect(frame)
     elapsed_ms = (time.perf_counter() - t0) * 1000.0
     return TrackingResult(

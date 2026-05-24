@@ -6,6 +6,8 @@ single import boundary for cv2, making the backend swappable.
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import numpy.typing as npt
 import scipy.ndimage
@@ -99,7 +101,7 @@ class ImageProcessor:
 
     def threshold_and_label(
         self, residual: npt.NDArray[np.float32]
-    ) -> tuple[npt.NDArray[np.uint8], int, npt.NDArray[np.int32]]:
+    ) -> tuple[npt.NDArray[np.int32], int, npt.NDArray[np.int32]]:
         """Threshold residual and label connected components.
 
         Args:
@@ -121,7 +123,11 @@ class ImageProcessor:
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
         opened = cv2.morphologyEx(binary_u8, cv2.MORPH_OPEN, kernel)
         n_labels, labels, stats, _ = cv2.connectedComponentsWithStats(opened)
-        return labels, n_labels, stats
+        return (
+            cast(npt.NDArray[np.int32], np.asarray(labels, dtype=np.int32)),
+            int(n_labels),
+            cast(npt.NDArray[np.int32], np.asarray(stats, dtype=np.int32)),
+        )
 
     def fit_ellipse_angle(
         self,

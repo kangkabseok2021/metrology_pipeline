@@ -10,6 +10,7 @@ import json
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import numpy.typing as npt
@@ -32,7 +33,7 @@ class NpyFrameLoader:
         Returns:
             float32 2-D NumPy array.
         """
-        return np.load(path).astype(np.float32)
+        return cast(npt.NDArray[np.float32], np.load(path).astype(np.float32))
 
 
 class JsonFrameWriter:
