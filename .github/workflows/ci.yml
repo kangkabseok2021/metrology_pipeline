@@ -43,3 +43,14 @@ jobs:
         with:
           name: benchmark-results
           path: benchmark-results.json
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build leo-tracker Docker image
+        run: docker build -t leo-tracker:${{ github.sha }} .
+      - name: Smoke-test import
+        run: |
+          docker run --rm leo-tracker:${{ github.sha }} \
+            python -c 'from leo_tracker import PipelineOrchestrator; print("import ok")'
