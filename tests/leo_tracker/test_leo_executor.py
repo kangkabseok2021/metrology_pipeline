@@ -6,7 +6,6 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from leo_tracker.executor import BatchProcessor
 from leo_tracker.generator import SyntheticImageGenerator

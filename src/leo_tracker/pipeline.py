@@ -1,4 +1,4 @@
-"""PipelineOrchestrator — composes detector and loader with zero business logic in routes.
+"""PipelineOrchestrator — composes detector and loader with zero business logic.
 
 Depends only on :class:`~leo_tracker.interfaces.AbstractDetector` and
 :class:`~leo_tracker.interfaces.IFrameLoader`, never on concrete classes (DIP).
@@ -17,7 +17,7 @@ import numpy.typing as npt
 
 from .errors import DetectionError, InvalidFrameError
 from .interfaces import AbstractDetector, IFrameLoader, IFrameWriter
-from .models import CentroidResult, TrackingResult
+from .models import TrackingResult
 from .processing import MorphologicalDetector
 
 
@@ -66,7 +66,8 @@ class PipelineOrchestrator:
         """Initialise orchestrator with optional injected collaborators.
 
         Args:
-            detector: Detection backend. Defaults to :class:`~leo_tracker.processing.MorphologicalDetector`.
+            detector: Detection backend. Defaults to
+                :class:`~leo_tracker.processing.MorphologicalDetector`.
             loader: Frame loader. Defaults to :class:`NpyFrameLoader`.
         """
         self._detector: AbstractDetector = detector or MorphologicalDetector()

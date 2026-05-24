@@ -52,5 +52,5 @@ jobs:
         run: docker build -t leo-tracker:${{ github.sha }} .
       - name: Smoke-test import
         run: |
-          docker run --rm leo-tracker:${{ github.sha }} \
-            python -c 'from leo_tracker import PipelineOrchestrator; print("import ok")'
+          docker run --rm --entrypoint python leo-tracker:${{ github.sha }} \
+            -c 'from leo_tracker import PipelineOrchestrator; print("import ok")'

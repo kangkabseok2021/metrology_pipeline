@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 
 from .errors import DetectionError, InvalidFrameError
-from .models import GeneratorConfig, TrackingResult
+from .models import TrackingResult
 from .processing import MorphologicalDetector
 
 _FRAME_TIMEOUT_S: float = 30.0

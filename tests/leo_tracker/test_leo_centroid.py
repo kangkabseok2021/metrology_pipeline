@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
-import pytest
 
 from leo_tracker.centroid import CentroidExtractor
 
@@ -54,8 +53,12 @@ def test_snr_positive_for_bright_source() -> None:
 def test_uncertainty_decreases_with_snr() -> None:
     """Higher intensity blob must produce smaller uncertainty_px."""
     extractor = CentroidExtractor()
-    r_bright = extractor.extract(_gaussian_patch(32.0, 32.0, intensity=500.0), (20, 20, 44, 44))
-    r_faint = extractor.extract(_gaussian_patch(32.0, 32.0, intensity=50.0), (20, 20, 44, 44))
+    r_bright = extractor.extract(
+        _gaussian_patch(32.0, 32.0, intensity=500.0), (20, 20, 44, 44)
+    )
+    r_faint = extractor.extract(
+        _gaussian_patch(32.0, 32.0, intensity=50.0), (20, 20, 44, 44)
+    )
     assert r_bright is not None and r_faint is not None
     assert r_bright.uncertainty_px < r_faint.uncertainty_px
 

@@ -12,10 +12,10 @@ import numpy as np
 import numpy.typing as npt
 import scipy.ndimage
 
+from .centroid import CentroidExtractor
 from .errors import InvalidFrameError
 from .interfaces import AbstractDetector
-from .models import CentroidResult, GeneratorConfig
-from .centroid import CentroidExtractor
+from .models import CentroidResult
 
 
 def _validate_frame(frame: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
@@ -32,13 +32,13 @@ def _validate_frame(frame: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
             or cannot be cast to float32.
     """
     if frame.ndim != 2:
-        raise InvalidFrameError(
-            f"Expected 2-D frame, got shape {frame.shape}"
-        )
+        raise InvalidFrameError(f"Expected 2-D frame, got shape {frame.shape}")
     try:
         out = frame.astype(np.float32)
     except (TypeError, ValueError) as exc:
-        raise InvalidFrameError(f"Cannot cast frame dtype {frame.dtype} to float32") from exc
+        raise InvalidFrameError(
+            f"Cannot cast frame dtype {frame.dtype} to float32"
+        ) from exc
     if not np.isfinite(out).all():
         raise InvalidFrameError(
             f"Frame contains non-finite values (NaN/Inf) — shape {frame.shape}"
@@ -65,15 +65,15 @@ class BackgroundSubtractor:
             Tuple of (residual_frame, background_level_adu) where
             residual = frame - background after top-hat enhancement.
         """
-        background = scipy.ndimage.median_filter(
-            frame, size=self.FILTER_SIZE
-        ).astype(np.float32)
+        background = scipy.ndimage.median_filter(frame, size=self.FILTER_SIZE).astype(
+            np.float32
+        )
         residual = frame - background
         bg_level = float(np.median(background))
         # morphological top-hat removes extended gradients, enhances compact sources
-        tophat = scipy.ndimage.white_tophat(
-            residual, size=self.TOPHAT_SIZE
-        ).astype(np.float32)
+        tophat = scipy.ndimage.white_tophat(residual, size=self.TOPHAT_SIZE).astype(
+            np.float32
+        )
         return tophat, bg_level
 
 
@@ -97,6 +97,7 @@ class ImageProcessor:
             Blurred float32 frame.
         """
         import cv2  # noqa: PLC0415
+
         return cv2.GaussianBlur(frame, (0, 0), sigma).astype(np.float32)
 
     def threshold_and_label(
@@ -113,12 +114,11 @@ class ImageProcessor:
             stats shape: (n_labels, 5) — [x, y, w, h, area].
         """
         import cv2  # noqa: PLC0415
+
         median = float(np.median(residual))
         mad = float(np.median(np.abs(residual - median)))
         thresh_val = median + 5.0 * mad
-        _, binary = cv2.threshold(
-            residual, thresh_val, 255.0, cv2.THRESH_BINARY
-        )
+        _, binary = cv2.threshold(residual, thresh_val, 255.0, cv2.THRESH_BINARY)
         binary_u8 = binary.astype(np.uint8)
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
         opened = cv2.morphologyEx(binary_u8, cv2.MORPH_OPEN, kernel)
@@ -146,10 +146,9 @@ class ImageProcessor:
             Major-axis angle in degrees, or None if fitting fails.
         """
         import cv2  # noqa: PLC0415
+
         mask = (label_map == label_idx).astype(np.uint8) * 255
-        contours, _ = cv2.findContours(
-            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if not contours or len(contours[0]) < 5:
             return None
         _, _, angle = cv2.fitEllipse(contours[0])
@@ -260,7 +259,9 @@ class FFTDetector(AbstractDetector):
                 continue
             y0, x0 = coords.min(axis=0)
             y1, x1 = coords.max(axis=0) + 1
-            result = self._cx.extract(filtered, (int(x0), int(y0), int(x1), int(y1)), 1.5)
+            result = self._cx.extract(
+                filtered, (int(x0), int(y0), int(x1), int(y1)), 1.5
+            )
             if result is not None:
                 results.append(result)
         return results

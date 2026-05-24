@@ -15,8 +15,8 @@ from .models import CentroidResult, TrackingResult
 class AbstractDetector(ABC):
     """Open/Closed base for all detection backends.
 
-    Concrete subclasses implement :meth:`detect` and can be swapped at
-    construction time without changing :class:`~leo_tracker.pipeline.PipelineOrchestrator`.
+    Concrete subclasses implement :meth:`detect` and can be swapped at construction
+    time without changing :class:`~leo_tracker.pipeline.PipelineOrchestrator`.
     """
 
     @abstractmethod

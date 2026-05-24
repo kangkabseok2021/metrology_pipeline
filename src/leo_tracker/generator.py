@@ -65,8 +65,7 @@ class SyntheticImageGenerator:
             patch_xx = xx[y0:y1, x0:x1]
             patch_yy = yy[y0:y1, x0:x1]
             blob = self.STAR_INTENSITY * np.exp(
-                -((patch_xx - cx) ** 2 + (patch_yy - cy) ** 2)
-                / (2 * self.PSF_SIGMA**2)
+                -((patch_xx - cx) ** 2 + (patch_yy - cy) ** 2) / (2 * self.PSF_SIGMA**2)
             )
             frame[y0:y1, x0:x1] += blob.astype(np.float32)
 
@@ -78,7 +77,9 @@ class SyntheticImageGenerator:
     ) -> tuple[float, float]:
         """Add a satellite streak and return its sub-pixel centroid."""
         s = config.size
-        length = int(rng.integers(config.streak_length_min, config.streak_length_max + 1))
+        length = int(
+            rng.integers(config.streak_length_min, config.streak_length_max + 1)
+        )
         angle = float(rng.uniform(0.0, 2 * math.pi))
         cx = float(rng.uniform(s * 0.25, s * 0.75))
         cy = float(rng.uniform(s * 0.25, s * 0.75))
@@ -100,9 +101,13 @@ class SyntheticImageGenerator:
                 continue
             patch_xx = xx[y0:y1, x0:x1]
             patch_yy = yy[y0:y1, x0:x1]
-            contrib = config.streak_intensity / n_samples * np.exp(
-                -((patch_xx - sx) ** 2 + (patch_yy - sy) ** 2)
-                / (2 * config.streak_sigma**2)
+            contrib = (
+                config.streak_intensity
+                / n_samples
+                * np.exp(
+                    -((patch_xx - sx) ** 2 + (patch_yy - sy) ** 2)
+                    / (2 * config.streak_sigma**2)
+                )
             )
             frame[y0:y1, x0:x1] += contrib.astype(np.float32)
         return cx, cy

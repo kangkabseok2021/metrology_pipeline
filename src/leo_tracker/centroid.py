@@ -48,8 +48,8 @@ class CentroidExtractor:
         # threshold at 0 to use only positive intensities
         patch_pos = np.where(patch > 0, patch, 0.0)
 
-        weights_x = patch_pos.sum(axis=0)   # shape (width,)
-        weights_y = patch_pos.sum(axis=1)   # shape (height,)
+        weights_x = patch_pos.sum(axis=0)  # shape (width,)
+        weights_y = patch_pos.sum(axis=1)  # shape (height,)
         total_weight = float(weights_x.sum())
         if total_weight < self.MIN_WEIGHT_SUM:
             return None

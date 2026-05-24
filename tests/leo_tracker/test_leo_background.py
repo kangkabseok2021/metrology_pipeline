@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
-import pytest
 
 from leo_tracker.processing import BackgroundSubtractor
 
@@ -24,7 +23,7 @@ def test_background_estimate_near_true_level() -> None:
 
 
 def test_residual_mean_near_zero() -> None:
-    """Top-hat residual of a background-only frame must be small relative to sky level."""
+    """Top-hat residual of a background-only frame must be small relative to sky."""
     rng = np.random.default_rng(1)
     sky = 60.0
     frame = rng.poisson(sky, (128, 128)).astype(np.float32)

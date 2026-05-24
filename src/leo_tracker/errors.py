@@ -2,7 +2,7 @@
 
 
 class InvalidFrameError(ValueError):
-    """Raised when a sensor frame has non-finite values, wrong shape, or unsupported dtype."""
+    """Raised when a frame has non-finite values, wrong shape, or unsupported dtype."""
 
 
 class DetectionError(RuntimeError):

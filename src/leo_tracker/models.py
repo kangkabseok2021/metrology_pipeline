@@ -32,7 +32,9 @@ class CentroidResult(BaseModel):
     y_px: int = Field(..., description="Integer pixel row of bounding-box centre")
     x_sub: float = Field(..., ge=0.0, description="Sub-pixel x centroid (weighted CoM)")
     y_sub: float = Field(..., ge=0.0, description="Sub-pixel y centroid (weighted CoM)")
-    snr: float = Field(..., ge=0.0, description="Signal-to-noise ratio of the detection")
+    snr: float = Field(
+        ..., ge=0.0, description="Signal-to-noise ratio of the detection"
+    )
     area_px: int = Field(..., ge=1, description="Blob area in pixels")
     uncertainty_px: float = Field(
         ..., ge=0.0, description="Cramer-Rao centroid uncertainty = psf_sigma / snr"

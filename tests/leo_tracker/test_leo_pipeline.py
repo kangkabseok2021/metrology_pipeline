@@ -7,11 +7,10 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from leo_tracker.generator import SyntheticImageGenerator
 from leo_tracker.models import GeneratorConfig, TrackingResult
-from leo_tracker.pipeline import JsonFrameWriter, NpyFrameLoader, PipelineOrchestrator
+from leo_tracker.pipeline import JsonFrameWriter, PipelineOrchestrator
 from leo_tracker.processing import FFTDetector, MorphologicalDetector
 
 
