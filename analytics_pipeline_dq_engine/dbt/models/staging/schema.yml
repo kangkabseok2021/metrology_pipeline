@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: bronze
+    schema: bronze
+    tables:
+      - name: raw_shipments
+
+models:
+  - name: stg_shipments
+    description: "Cleaned Silver view: normalised hubs, dates, nullified negatives, deduplicated."
+    columns:
+      - name: shipment_id
+        tests: [not_null]
+      - name: origin_hub
+        tests: [not_null]
+      - name: ship_date
+        tests: [not_null]
+      - name: carrier
+        tests:
+          - accepted_values:
+              values: ["FedEx", "UPS", "DHL", "USPS", "TNT", "Maersk"]

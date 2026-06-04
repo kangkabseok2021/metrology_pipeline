@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: dim_locations
+    columns:
+      - name: location_id
+        tests: [not_null, unique]
+      - name: hub_code
+        tests: [not_null]
+      - name: region
+        tests:
+          - accepted_values:
+              values: ["Northeast","West","Midwest","South","Southwest",
+                       "North","Central","East","Unknown"]
+      - name: country_code
+        tests: [not_null]
+
+  - name: dim_dates
+    columns:
+      - name: date_id
+        tests: [not_null, unique]
+      - name: full_date
+        tests: [not_null]
+
+  - name: dim_products
+    columns:
+      - name: product_id
+        tests: [not_null, unique]
+      - name: weight_class
+        tests:
+          - accepted_values:
+              values: ["Light", "Medium", "Heavy"]
+
+  - name: fact_shipments
+    columns:
+      - name: shipment_sk
+        tests: [not_null, unique]
+      - name: origin_location_id
+        tests:
+          - relationships:
+              to: ref('dim_locations')
+              field: location_id
+      - name: destination_location_id
+        tests:
+          - relationships:
+              to: ref('dim_locations')
+              field: location_id
+      - name: ship_date_id
+        tests:
+          - relationships:
+              to: ref('dim_dates')
+              field: date_id
+      - name: product_id
+        tests:
+          - relationships:
+              to: ref('dim_products')
+              field: product_id

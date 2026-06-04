@@ -54,3 +54,68 @@ jobs:
         run: |
           docker run --rm --entrypoint python leo-tracker:${{ github.sha }} \
             -c 'from leo_tracker import PipelineOrchestrator; print("import ok")'
+
+  dq-pipeline:
+    name: Analytics DQ Pipeline — 7 offline pytest + dbt + GE Z-score gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: analytics_pipeline_dq_engine
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB:       analytics
+          POSTGRES_USER:     analytics
+          POSTGRES_PASSWORD: analytics
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install Python deps (main + dev group)
+        run: uv sync --group dev
+
+      - name: ruff lint
+        run: uv run ruff check .
+
+      - name: Run offline tests (4 generation + 4 quality — no DB needed)
+        run: uv run pytest tests/test_generation.py tests/test_quality.py -v --tb=short
+
+      - name: Generate 5 000-row CSV
+        run: uv run python generate_raw_data.py --rows 5000 --output /tmp/raw_shipments.csv
+
+      - name: Load Bronze
+        env:
+          DATABASE_URL: postgresql://analytics:analytics@localhost:5432/analytics
+        run: uv run python load_bronze.py --csv /tmp/raw_shipments.csv
+
+      - name: dbt deps + run + test (Star Schema + dbt tests)
+        env:
+          DBT_HOST:     localhost
+          DBT_USER:     analytics
+          DBT_PASSWORD: analytics
+          DBT_DBNAME:   analytics
+        run: |
+          uv run dbt deps  --project-dir dbt --profiles-dir dbt
+          uv run dbt run   --project-dir dbt --profiles-dir dbt
+          uv run dbt test  --project-dir dbt --profiles-dir dbt
+
+      - name: Run DB tests (3 Bronze load tests)
+        env:
+          DATABASE_URL: postgresql://analytics:analytics@localhost:5432/analytics
+        run: uv run pytest tests/test_load.py -v --tb=short
+
+      - name: GE Z-score quality gate
+        env:
+          DATABASE_URL: postgresql://analytics:analytics@localhost:5432/analytics
+        run: uv run python quality/checkpoint.py
