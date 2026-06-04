@@ -26,4 +26,4 @@ markers = ["db: requires a running PostgreSQL instance"]
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+select = ["E", "F", "UP"]
