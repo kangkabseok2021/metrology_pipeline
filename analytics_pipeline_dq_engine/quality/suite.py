@@ -67,12 +67,14 @@ def validate_shipping_costs(
         failures += 1
         details.append(f"null_rate={null_rate:.2%} > 10 %")
 
-    # Expectation 2: mostly in [0, 50 000] (≥ 99 %)
+    # Expectation 2: mostly in [0, 50 000] (≥ 96 % on raw Bronze data).
+    # Raw data contains ~2 % injected negative costs; cleaned Silver data
+    # would use a stricter threshold after dbt nullifies negatives.
     in_range = valid[(valid >= 0) & (valid <= 50_000)]
     range_rate = len(in_range) / n_valid if n_valid else 0.0
-    if range_rate < 0.99:
+    if range_rate < 0.96:
         failures += 1
-        details.append(f"in_range_rate={range_rate:.2%} < 99 %")
+        details.append(f"in_range_rate={range_rate:.2%} < 96 %")
 
     # Expectation 3: mean in [100, 10 000]
     mean_val = float(valid.mean()) if n_valid else 0.0
