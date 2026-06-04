@@ -7,10 +7,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
-from quality.suite import ValidationResult, validate_shipping_costs, z_scores
+from quality.suite import validate_shipping_costs, z_scores
 
 
 # ── Z-score unit tests ────────────────────────────────────────────────────────
