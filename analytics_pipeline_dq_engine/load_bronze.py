@@ -19,7 +19,7 @@ def load_bronze(csv_path: Path, database_url: str) -> int:
 
     with engine.begin() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS bronze"))
-        conn.execute(text("DROP TABLE IF EXISTS bronze.raw_shipments"))
+        conn.execute(text("DROP TABLE IF EXISTS bronze.raw_shipments CASCADE"))
 
     df.to_sql(
         name="raw_shipments",
