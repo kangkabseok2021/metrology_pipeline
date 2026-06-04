@@ -39,10 +39,12 @@ def generate_raw_data(n_rows: int = 25_000, seed: int = 42) -> pd.DataFrame:
 
     hubs_origin = rng.choice(HUBS, size=n_rows)
     hubs_dest = rng.choice(HUBS, size=n_rows)
+    # Ensure origin ≠ destination by cycling to the next hub (modular)
+    hubs_arr = np.array(HUBS)
     same_mask = hubs_origin == hubs_dest
-    hubs_dest[same_mask] = np.roll(HUBS, 1)[
-        np.searchsorted(HUBS, hubs_origin[same_mask])
-    ]
+    if same_mask.any():
+        idxs = np.array([HUBS.index(h) for h in hubs_origin[same_mask]])
+        hubs_dest[same_mask] = hubs_arr[(idxs + 1) % len(HUBS)]
 
     df = pd.DataFrame({
         "shipment_id":       [f"SHP-{i:07d}" for i in range(n_rows)],
