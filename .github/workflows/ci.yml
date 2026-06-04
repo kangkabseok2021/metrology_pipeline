@@ -83,7 +83,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Install Python deps (main + dev group)
-        run: uv sync --group dev
+        run: uv sync --group dev --no-install-project
 
       - name: ruff lint
         run: uv run ruff check .
