@@ -1,0 +1,74 @@
+name: automotive-telemetry-warehouse
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: telemetry
+      POSTGRES_USER: telemetry
+      POSTGRES_PASSWORD: telemetry
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./db/roles.sql:/docker-entrypoint-initdb.d/02_roles.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "telemetry"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  loader:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://telemetry:telemetry@postgres:5432/telemetry
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        python scripts/generate_telemetry.py --rows 500000 --output /tmp/telemetry.csv &&
+        python scripts/load_warehouse.py --csv /tmp/telemetry.csv
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://telemetry:telemetry@postgres:5432/telemetry
+    ports: ["8000:8000"]
+
+  superset:
+    build:
+      context: ./superset
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SUPERSET_SECRET_KEY: telemetry-demo-secret-key-change-me
+    ports: ["8088:8088"]
+
+  airflow:
+    image: apache/airflow:2.10.2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://telemetry:telemetry@postgres:5432/telemetry
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      WAREHOUSE_DB_URL: postgresql://telemetry:telemetry@postgres:5432/telemetry
+      API_BASE_URL: http://api:8000
+    volumes:
+      - ./dags:/opt/airflow/dags:ro
+    ports: ["8080:8080"]
+    command: ["standalone"]
+
+volumes:
+  pgdata:

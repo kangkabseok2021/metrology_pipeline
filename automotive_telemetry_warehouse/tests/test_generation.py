@@ -65,3 +65,14 @@ def test_deterministic_with_seed():
     a = generate_telemetry(n_rows=1_000, seed=42)
     b = generate_telemetry(n_rows=1_000, seed=42)
     assert a.equals(b)
+
+
+def test_docker_compose_config_is_valid():
+    import subprocess
+
+    compose_file = Path(__file__).parents[1] / "docker-compose.yml"
+    result = subprocess.run(
+        ["docker", "compose", "-f", str(compose_file), "config", "--quiet"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
