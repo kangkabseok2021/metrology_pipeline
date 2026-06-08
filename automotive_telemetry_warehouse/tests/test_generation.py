@@ -76,3 +76,10 @@ def test_docker_compose_config_is_valid():
         capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_airflow_dag_compiles():
+    import py_compile
+
+    dag_file = Path(__file__).parents[1] / "dags" / "refresh_materialized_views.py"
+    py_compile.compile(str(dag_file), doraise=True)
