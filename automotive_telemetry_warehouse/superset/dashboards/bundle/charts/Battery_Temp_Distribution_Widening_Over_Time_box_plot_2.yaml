@@ -1,0 +1,19 @@
+slice_name: Battery Temp Distribution Widening Over Time (box plot)
+description: null
+certified_by: null
+certification_details: null
+viz_type: box_plot
+params:
+  viz_type: box_plot
+  metrics:
+  - avg_temp_c
+  - max_temp_c
+  - p95_temp_c
+  groupby:
+  - day
+  whisker_options: Min/max (no outliers)
+query_context: null
+cache_timeout: null
+uuid: cc7d983b-9408-4c53-89af-0e03730f0f17
+version: 1.0.0
+dataset_uuid: 7d9e9743-dba4-4d80-b1b3-ea00d2e336a4

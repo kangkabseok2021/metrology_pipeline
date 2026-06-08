@@ -11,9 +11,12 @@ See `docs/ARCHITECTURE.md` for the schema ERD and data flow, and
 ## Quickstart
 
 ```bash
-make up                       # start postgres + api + superset + airflow
-make generate ROWS=500000     # synthetic fleet telemetry CSV
-make load                     # COPY into the Star Schema
+make up                       # start postgres + api + superset + airflow;
+                              # the loader service auto-generates and loads ~500K rows
 make bench                    # EXPLAIN ANALYZE BRIN-vs-B-tree comparison
 make test                     # pytest-postgresql suite
+make dashboards               # provision the Superset Fleet Telemetry dashboard
+
+# Optional: reload with a different row count (appends to the existing data)
+make generate ROWS=1000000 && make load
 ```

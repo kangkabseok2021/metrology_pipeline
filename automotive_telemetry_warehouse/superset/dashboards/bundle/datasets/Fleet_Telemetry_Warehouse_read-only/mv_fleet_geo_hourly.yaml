@@ -1,0 +1,101 @@
+table_name: mv_fleet_geo_hourly
+main_dttm_col: date
+description: null
+default_endpoint: null
+offset: 0
+cache_timeout: null
+schema: public
+sql: null
+params: null
+template_params: null
+filter_select_enabled: true
+fetch_values_predicate: null
+extra: null
+normalize_columns: false
+always_filter_main_dttm: false
+uuid: 55a374b9-132d-45f7-9675-64489a47b5b7
+metrics:
+- metric_name: count
+  verbose_name: COUNT(*)
+  metric_type: count
+  expression: COUNT(*)
+  description: null
+  d3format: null
+  currency: null
+  extra: null
+  warning_text: null
+columns:
+- column_name: model
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: VARCHAR(32)
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: null
+- column_name: date
+  verbose_name: null
+  is_dttm: true
+  is_active: true
+  type: DATE
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: null
+- column_name: hour
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: SMALLINT
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: null
+- column_name: event_count
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: BIGINT
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: null
+- column_name: lat_bucket
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: NUMERIC
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: null
+- column_name: lon_bucket
+  verbose_name: null
+  is_dttm: false
+  is_active: true
+  type: NUMERIC
+  advanced_data_type: null
+  groupby: true
+  filterable: true
+  expression: null
+  description: null
+  python_date_format: null
+  extra: null
+version: 1.0.0
+database_uuid: 34f4af8f-167e-458c-912d-ac77bd215cde

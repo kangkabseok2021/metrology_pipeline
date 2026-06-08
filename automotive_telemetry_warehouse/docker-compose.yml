@@ -53,6 +53,13 @@ services:
     environment:
       SUPERSET_SECRET_KEY: telemetry-demo-secret-key-change-me
     ports: ["8088:8088"]
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        superset db upgrade &&
+        superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@superset.io --password admin &&
+        superset init &&
+        /usr/bin/run-server.sh
 
   airflow:
     image: apache/airflow:2.10.2

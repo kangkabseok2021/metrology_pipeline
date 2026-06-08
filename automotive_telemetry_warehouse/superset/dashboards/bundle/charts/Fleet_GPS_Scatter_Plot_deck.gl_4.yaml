@@ -1,0 +1,24 @@
+slice_name: Fleet GPS Scatter Plot (deck.gl)
+description: null
+certified_by: null
+certification_details: null
+viz_type: deck_scatter
+params:
+  viz_type: deck_scatter
+  spatial:
+    type: latlong
+    lonCol: lon_bucket
+    latCol: lat_bucket
+  point_radius_fixed:
+    type: metric
+    value: event_count
+  color_picker:
+    r: 0
+    g: 122
+    b: 255
+    a: 0.8
+query_context: null
+cache_timeout: null
+uuid: 796da8fd-9b77-4640-b4fb-9b219d388253
+version: 1.0.0
+dataset_uuid: 55a374b9-132d-45f7-9675-64489a47b5b7

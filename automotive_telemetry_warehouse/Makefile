@@ -20,7 +20,7 @@ bench:
 	DATABASE_URL=$(DB_URL) uv run python scripts/bench_indexes.py --rows $(ROWS)
 
 dashboards:
-	docker compose exec superset superset import-dashboards -p /app/dashboards/fleet_telemetry.json -u admin
+	uv run python scripts/import_dashboard.py
 
 test:
 	uv run pytest tests/ -v --tb=short

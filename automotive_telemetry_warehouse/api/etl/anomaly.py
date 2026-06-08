@@ -94,13 +94,21 @@ class AnomalyListener:
         except asyncio.CancelledError:
             pass
 
-    def _on_notify(self, connection, pid, channel, payload) -> None:
+    async def _on_notify(self, connection, pid, channel, payload) -> None:
+        # asyncpg dispatches sync callbacks via loop.call_soon, which would run
+        # flag_anomalies' blocking psycopg2 queries directly on the event loop
+        # thread and stall every concurrent FastAPI request. Being `async def`
+        # routes dispatch through loop.create_task instead, and asyncio.to_thread
+        # moves the actual blocking work off the loop thread entirely.
+        await asyncio.to_thread(self._run_flagging, payload)
+
+    def _run_flagging(self, run_id: str) -> None:
         from sqlalchemy import create_engine
 
         sync_url = db.settings.database_url.replace("postgresql+asyncpg", "postgresql+psycopg2")
         engine = create_engine(sync_url, future=True)
         try:
-            flag_anomalies(engine, run_id=payload)
+            flag_anomalies(engine, run_id=run_id)
         finally:
             engine.dispose()
 

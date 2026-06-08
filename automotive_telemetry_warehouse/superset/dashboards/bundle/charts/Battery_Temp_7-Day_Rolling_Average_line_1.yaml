@@ -1,0 +1,18 @@
+slice_name: "Battery Temp \u2014 7-Day Rolling Average (line)"
+description: null
+certified_by: null
+certification_details: null
+viz_type: echarts_timeseries_line
+params:
+  viz_type: echarts_timeseries_line
+  metrics:
+  - rolling_7d_avg_temp_c
+  groupby:
+  - model
+  x_axis: day
+  time_grain_sqla: P1D
+query_context: null
+cache_timeout: null
+uuid: 004b8be1-44d7-4f77-9f64-b82d41e923fa
+version: 1.0.0
+dataset_uuid: 7d9e9743-dba4-4d80-b1b3-ea00d2e336a4

@@ -1,0 +1,19 @@
+slice_name: Fleet GPS Heatmap (deck.gl)
+description: null
+certified_by: null
+certification_details: null
+viz_type: deck_screengrid
+params:
+  viz_type: deck_screengrid
+  spatial:
+    type: latlong
+    lonCol: lon_bucket
+    latCol: lat_bucket
+  size: event_count
+  grid_size: 25
+  mapbox_style: mapbox://styles/mapbox/dark-v9
+query_context: null
+cache_timeout: null
+uuid: cbacdf3b-48cc-4401-b585-bce24eeba4a7
+version: 1.0.0
+dataset_uuid: 55a374b9-132d-45f7-9675-64489a47b5b7
