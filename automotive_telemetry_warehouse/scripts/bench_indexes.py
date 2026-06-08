@@ -74,7 +74,12 @@ def run_benchmark(database_url: str) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="BRIN-vs-B-tree + partial-index benchmark")
-    ap.add_argument("--rows", type=int, default=500_000, help="rows expected to be loaded (for the report header)")
+    ap.add_argument(
+        "--rows",
+        type=int,
+        default=500_000,
+        help="rows expected to be loaded (for the report header)",
+    )
     ap.add_argument("--db", default=DB_URL)
     args = ap.parse_args()
 
