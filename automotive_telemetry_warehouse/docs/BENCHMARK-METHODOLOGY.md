@@ -34,8 +34,8 @@ brin_size ≈ (table_size_bytes / (pages_per_range * 8KB)) * bytes_per_summary_t
 ```
 
 — **proportional to `table_size / pages_per_range`**, independent of the
-absolute row count. Scaling the measured table from ~300K-1M rows (~70-250 MB)
-to 10M rows (~1.2 GB, assuming the same ~120-byte average row width) scales
+absolute row count. Scaling the measured table from ~300K-1M rows (~36-120 MB
+at the ~120-byte average row width assumed throughout) to 10M rows (~1.2 GB) scales
 `table_size_bytes` linearly, so `brin_size` scales linearly too — the **ratio**
 `brin_size / btree_size` measured locally is expected to hold at 10M rows,
 because B-tree size *also* scales roughly linearly with row count (one entry
