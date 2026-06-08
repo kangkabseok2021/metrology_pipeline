@@ -119,3 +119,40 @@ jobs:
         env:
           DATABASE_URL: postgresql://analytics:analytics@localhost:5432/analytics
         run: uv run python quality/checkpoint.py
+
+  telemetry-warehouse:
+    name: Automotive Telemetry Warehouse — lint + offline + pytest-postgresql + smoke
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automotive_telemetry_warehouse
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install Python deps (main + dev group)
+        run: uv sync --group dev --no-install-project
+
+      - name: ruff lint
+        run: uv run ruff check .
+
+      - name: Offline tests (generation — no DB needed)
+        run: uv run pytest tests/test_generation.py -v --tb=short -k "not docker_compose and not k8s"
+
+      - name: pytest-postgresql suite (schema, load, endpoints, anomaly — ephemeral DB, no Docker)
+        run: uv run pytest tests/test_schema.py tests/test_load.py tests/test_health.py tests/test_endpoints.py tests/test_anomaly.py -v --tb=short
+
+      - name: Data-generation smoke test (1000-row dry run)
+        run: uv run python scripts/generate_telemetry.py --rows 1000 --dry-run
+
+      - name: docker compose config validation
+        run: docker compose -f docker-compose.yml config --quiet
+
+      - name: Kubernetes manifest YAML validation
+        run: uv run pytest tests/test_generation.py::test_k8s_manifests_are_valid_yaml -v
+
+      - name: Airflow DAG syntax check
+        run: uv run pytest tests/test_generation.py::test_airflow_dag_compiles -v
