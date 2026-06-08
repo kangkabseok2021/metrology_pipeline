@@ -1,8 +1,10 @@
 """Bulk-load synthetic telemetry CSV into the Star Schema via psycopg2 COPY.
 
-Mirrors load_bronze.py's COPY-based bulk-insert pattern, adapted to populate
-dimensions first (dim_vehicle, dim_time) then the fact table, and fire
-pg_notify('etl_complete', run_id) so the FastAPI anomaly-ETL listener wakes up.
+Loads CSV -> pandas -> PostgreSQL like load_bronze.py, but uses
+`COPY ... FROM STDIN` for the (large) fact table instead of `to_sql`, since
+dimensions need idempotent upserts first (dim_vehicle, dim_time) before the
+fact rows can reference them, then fires pg_notify('etl_complete', run_id) so
+the FastAPI anomaly-ETL listener wakes up.
 """
 
 from __future__ import annotations
@@ -41,6 +43,7 @@ def _ensure_vehicles(cur, df: pd.DataFrame, rng_seed: int = 0) -> dict[str, int]
         cur.execute(
             "INSERT INTO dim_vehicle (vehicle_id, model, manufacture_year, "
             "battery_capacity_kwh, region) VALUES (%s, %s, %s, %s, %s) "
+            "ON CONFLICT (vehicle_id) DO UPDATE SET vehicle_id = EXCLUDED.vehicle_id "
             "RETURNING vehicle_key",
             (
                 row["vehicle_id"], model, MODELS_TO_YEAR[model],
