@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: telemetry-postgres
+spec:
+  serviceName: telemetry-postgres
+  replicas: 1
+  selector:
+    matchLabels: {app: telemetry-postgres}
+  template:
+    metadata:
+      labels: {app: telemetry-postgres}
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports: [{containerPort: 5432}]
+          envFrom:
+            - configMapRef: {name: telemetry-config}
+            - secretRef: {name: telemetry-secrets}
+          volumeMounts:
+            - {name: pgdata, mountPath: /var/lib/postgresql/data}
+          readinessProbe:
+            exec: {command: ["pg_isready", "-U", "telemetry"]}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata: {name: pgdata}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources: {requests: {storage: 10Gi}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemetry-postgres
+spec:
+  clusterIP: None
+  selector: {app: telemetry-postgres}
+  ports: [{port: 5432}]

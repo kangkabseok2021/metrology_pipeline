@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telemetry-config
+data:
+  POSTGRES_DB: "telemetry"
+  POSTGRES_USER: "telemetry"
+  API_BASE_URL: "http://telemetry-api:8000"

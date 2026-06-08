@@ -83,3 +83,17 @@ def test_airflow_dag_compiles():
 
     dag_file = Path(__file__).parents[1] / "dags" / "refresh_materialized_views.py"
     py_compile.compile(str(dag_file), doraise=True)
+
+
+def test_k8s_manifests_are_valid_yaml():
+    import yaml
+
+    k8s_dir = Path(__file__).parents[1] / "k8s"
+    manifest_files = sorted(k8s_dir.glob("*.yaml"))
+    assert len(manifest_files) == 6, f"expected 6 manifests, found {len(manifest_files)}"
+
+    for path in manifest_files:
+        docs = list(yaml.safe_load_all(path.read_text()))
+        assert docs, f"{path.name} produced no YAML documents"
+        for doc in docs:
+            assert "kind" in doc and "apiVersion" in doc, f"{path.name}: missing kind/apiVersion"

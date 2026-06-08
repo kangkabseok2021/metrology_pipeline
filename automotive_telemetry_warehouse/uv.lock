@@ -102,6 +102,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-postgresql" },
+    { name = "pyyaml" },
     { name = "ruff" },
 ]
 
@@ -123,6 +124,7 @@ dev = [
     { name = "pytest", specifier = ">=8" },
     { name = "pytest-asyncio", specifier = ">=0.24" },
     { name = "pytest-postgresql", specifier = ">=6.1" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", specifier = ">=0.6,<0.14" },
 ]
 

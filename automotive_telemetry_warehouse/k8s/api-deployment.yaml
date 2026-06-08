@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetry-api
+spec:
+  replicas: 3
+  strategy: {type: RollingUpdate, rollingUpdate: {maxSurge: 1, maxUnavailable: 0}}
+  selector:
+    matchLabels: {app: telemetry-api}
+  template:
+    metadata:
+      labels: {app: telemetry-api}
+    spec:
+      containers:
+        - name: api
+          image: automotive-telemetry-warehouse-api:latest
+          ports: [{containerPort: 8000}]
+          envFrom:
+            - configMapRef: {name: telemetry-config}
+            - secretRef: {name: telemetry-secrets}
+          livenessProbe:
+            httpGet: {path: /api/health, port: 8000}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /api/health, port: 8000}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests: {cpu: "250m", memory: "256Mi"}
+            limits: {cpu: "500m", memory: "512Mi"}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemetry-api
+spec:
+  selector: {app: telemetry-api}
+  ports: [{port: 8000, targetPort: 8000}]
