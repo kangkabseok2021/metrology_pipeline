@@ -115,7 +115,7 @@ public class CorrelationNetworkService {
         return arr;
     }
 
-    static double correlationPValue(double r, int n) {
+    public static double correlationPValue(double r, int n) {
         if (n <= 2) return 1.0;
         double t = r * Math.sqrt(n - 2) / Math.sqrt(1 - r * r + 1e-300);
         TDistribution dist = new TDistribution(n - 2);

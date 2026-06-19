@@ -10,7 +10,7 @@ from metabopipe.feature import (
     FeatureMatrixBuilder,
     RTAligner,
 )
-from metabopipe.reader import ExtractedIonChromatogram, Spectrum
+from metabopipe.reader import ExtractedIonChromatogram
 
 
 def _gaussian_eic(n: int = 50, apex: int = 25, sigma: float = 3.0, height: float = 1e4) -> ExtractedIonChromatogram:
@@ -51,8 +51,9 @@ def test_detector_peak_area_positive() -> None:
 
 def test_rt_aligner_reduces_drift() -> None:
     """After alignment, corrected RTs should be closer to the reference."""
-    ref_peaks = [ChromatographicPeak(rt_apex=float(rt), mz=100.0, area=1.0, apex_intensity=1e4) for rt in [10, 20, 30, 40, 50]]
-    drifted = [ChromatographicPeak(rt_apex=float(rt + 2), mz=100.0, area=1.0, apex_intensity=1e4) for rt in [10, 20, 30, 40, 50]]
+    rts = [10, 20, 30, 40, 50]
+    ref_peaks = [ChromatographicPeak(rt_apex=float(rt), mz=100.0, area=1.0, apex_intensity=1e4) for rt in rts]
+    drifted = [ChromatographicPeak(rt_apex=float(rt + 2), mz=100.0, area=1.0, apex_intensity=1e4) for rt in rts]
 
     aligned = RTAligner().align({"ref": ref_peaks, "s1": drifted}, "ref")
     corrected_rts = [p.rt_apex for p in aligned["s1"]]

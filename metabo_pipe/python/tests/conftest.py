@@ -2,14 +2,12 @@
 from __future__ import annotations
 
 import base64
-import struct
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from metabopipe.reader import Spectrum
-
 
 # ---------------------------------------------------------------------------
 # Synthetic mzML helper

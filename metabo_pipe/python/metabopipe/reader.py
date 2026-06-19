@@ -27,7 +27,7 @@ class ExtractedIonChromatogram:
         spectra: list[Spectrum],
         mz: float,
         ppm_tolerance: float = 10.0,
-    ) -> "ExtractedIonChromatogram":
+    ) -> ExtractedIonChromatogram:
         rts: list[float] = []
         intensities: list[float] = []
         for s in spectra:

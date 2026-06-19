@@ -1,7 +1,6 @@
 """Tests for formula prediction, isotope scoring, spectral matching, Schymanski levels."""
 from __future__ import annotations
 
-import math
 from pathlib import Path
 
 import pytest
