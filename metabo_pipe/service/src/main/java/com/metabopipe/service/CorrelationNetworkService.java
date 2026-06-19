@@ -82,6 +82,7 @@ public class CorrelationNetworkService {
     public record EdgeDto(Long sourceId, Long targetId, double correlation, double pValue) {}
     public record NetworkDto(List<NodeDto> nodes, List<EdgeDto> edges) {}
 
+    @Transactional(readOnly = true)
     public NetworkDto getNetwork(String sampleGroup) {
         List<NetworkEdge> edges = edgeRepo.findBySampleGroup(sampleGroup);
         Set<OmicsFeature> featureSet = new LinkedHashSet<>();
