@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/kangkabseok2021/metrology_pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/kangkabseok2021/metrology_pipeline/actions/workflows/ci.yml)
 
-Five projects sharing the theme of **scientific measurement pipelines** — from wafer inspection and satellite tracking to LC-MS metabolomics and automotive analytics:
+Six projects sharing the theme of **scientific measurement pipelines and data engineering** — from wafer inspection and satellite tracking to LC-MS metabolomics, automotive analytics, and enterprise lakehouse migration:
 
 | Project | Language(s) | Domain |
 |---------|-------------|--------|
@@ -11,6 +11,7 @@ Five projects sharing the theme of **scientific measurement pipelines** — from
 | [`analytics_pipeline_dq_engine`](#analytics_pipeline_dq_engine) | Python / dbt / SQL | ELT data quality pipeline with Great Expectations |
 | [`automotive_telemetry_warehouse`](#automotive_telemetry_warehouse) | Python / PySpark / Airflow | Automotive sensor data warehouse (Kimball star schema) |
 | [`metabo_pipe`](#metabo_pipe) | Python · R · Java 21 | LC-MS metabolomics feature extraction, annotation & multi-omics integration |
+| [`insurance_lakehouse_migration`](#insurance_lakehouse_migration) | Python / PySpark / Delta Lake | MS SQL Server DWH to Databricks Lakehouse migration |
 
 ---
 
@@ -287,6 +288,23 @@ mvn test
 
 ---
 
+## insurance_lakehouse_migration
+
+MS SQL Server DWH to Databricks Lakehouse migration: three divergent legacy schemas into a Kimball star schema via a PySpark Delta Lake medallion pipeline.
+
+### What it does
+
+- **Source landscape** — three MS SQL Server schemas with incompatible conventions: `policyadmin` (PascalCase, GUID keys), `claims` (snake_case, integer rank keys), `billing` (snake_case, DD/MM/YYYY dates, email keys). See [`docs/insurance_lakehouse_migration/SOURCE-SYSTEMS.md`](docs/insurance_lakehouse_migration/SOURCE-SYSTEMS.md).
+- **Bronze layer** — JDBC extraction into Delta Lake (full overwrite, audit columns, partitioned by ingest date).
+- **Silver layer** — column normalisation; `try_to_date` for non-ISO billing dates; Delta MERGE idempotency; `dim_customer_xref` cross-system identity resolution linking GUID / integer rank / email. See [`docs/insurance_lakehouse_migration/IDENTITY-RESOLUTION.md`](docs/insurance_lakehouse_migration/IDENTITY-RESOLUTION.md).
+- **Gold layer** — Kimball star schema: `dim_policy` (SCD Type 2 via `lead()`), `dim_customer`, `dim_date`, `fact_claims`, `fact_premiums`; deterministic surrogate keys. See [`docs/insurance_lakehouse_migration/DATA-MODEL.md`](docs/insurance_lakehouse_migration/DATA-MODEL.md).
+- **Data quality gate** — pure-pandas Z-score suite: null FK checks, referential-integrity checks, outlier gate on `payout_amount`.
+- **CI / IaC** — GitHub Actions offline pytest (Java 21 pinned); Azure Pipelines reference pipeline (4 stages); Terraform stubs for ADLS Gen2 + Databricks workspace.
+
+See [`docs/insurance_lakehouse_migration/MIGRATION-RUNBOOK.md`](docs/insurance_lakehouse_migration/MIGRATION-RUNBOOK.md) for the end-to-end operational guide.
+
+---
+
 ## Installation
 
 ```bash
@@ -339,3 +357,4 @@ Ten jobs run on every push to `main`:
 | `metabo-pipe-python` | MetaboPipe Python — 27 pytest (mzML reader, CWT peak detection, LOESS alignment, formula prediction, cosine spectral matching) |
 | `metabo-pipe-r` | MetaboPipe R — 9 testthat (PCA variance, BH-FDR, volcano plot, injected-signal significance) |
 | `metabo-pipe-java` | MetaboPipe Java — Spring Boot 3.3 / JUnit / Testcontainers PostgreSQL (import idempotency, Pearson network edges) |
+| `insurance-lakehouse` | Insurance lakehouse — ruff lint + 32 offline pytest (Silver transforms, Gold star schema, SCD2, quality gate); Java 21 pinned |
