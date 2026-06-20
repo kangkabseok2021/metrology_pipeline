@@ -36,6 +36,15 @@ def rename_columns_to_snake(df: DataFrame) -> DataFrame:
     return df
 
 
+def _normalize_id_columns(df: DataFrame) -> DataFrame:
+    """Rename columns ending in '_i_d' → '_id' (artifact of pascal_to_snake on 'ID' acronyms)."""
+    for col in df.columns:
+        fixed = re.sub(r"_i_d$", "_id", col)
+        if fixed != col:
+            df = df.withColumnRenamed(col, fixed)
+    return df
+
+
 # ── Delta MERGE writer ────────────────────────────────────────────────────────
 
 def merge_or_create(df: DataFrame, path: str, key_cols: list[str]) -> None:
@@ -62,7 +71,7 @@ def merge_or_create(df: DataFrame, path: str, key_cols: list[str]) -> None:
 def silver_policyadmin_customers(df: DataFrame) -> DataFrame:
     """Bronze policyadmin.Customers → snake_case columns, ISO date strings."""
     return (
-        rename_columns_to_snake(df)
+        _normalize_id_columns(rename_columns_to_snake(df))
         .withColumn("date_of_birth", F.to_date(F.col("date_of_birth")))
         .withColumn("created_at", F.to_date(F.col("created_at")))
         .drop("_source_system", "_ingested_at")
@@ -72,7 +81,7 @@ def silver_policyadmin_customers(df: DataFrame) -> DataFrame:
 def silver_policyadmin_policies(df: DataFrame) -> DataFrame:
     """Bronze policyadmin.Policies → snake_case, ISO dates."""
     return (
-        rename_columns_to_snake(df)
+        _normalize_id_columns(rename_columns_to_snake(df))
         .withColumn("start_date", F.to_date(F.col("start_date")))
         .withColumn("end_date", F.to_date(F.col("end_date")))
         .drop("_source_system", "_ingested_at")
@@ -80,7 +89,7 @@ def silver_policyadmin_policies(df: DataFrame) -> DataFrame:
 
 
 def silver_policyadmin_coverages(df: DataFrame) -> DataFrame:
-    return rename_columns_to_snake(df).drop("_source_system", "_ingested_at")
+    return _normalize_id_columns(rename_columns_to_snake(df)).drop("_source_system", "_ingested_at")
 
 
 def silver_claims_events(df: DataFrame) -> DataFrame:
@@ -90,9 +99,6 @@ def silver_claims_events(df: DataFrame) -> DataFrame:
 
 def silver_claims_payouts(df: DataFrame) -> DataFrame:
     return df.drop("_source_system", "_ingested_at")
-
-
-_parse_date_udf = F.udf(parse_ddmmyyyy)
 
 
 def silver_billing_invoices(df: DataFrame) -> DataFrame:

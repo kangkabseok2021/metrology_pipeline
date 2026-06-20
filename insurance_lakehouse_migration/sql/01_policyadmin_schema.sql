@@ -18,7 +18,7 @@ CREATE TABLE policyadmin.Customers (
 GO
 
 CREATE TABLE policyadmin.Policies (
-    PolicyID           UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    PolicyID           UNIQUEIDENTIFIER NOT NULL,
     CustomerID         UNIQUEIDENTIFIER NOT NULL REFERENCES policyadmin.Customers(CustomerID),
     PolicyType         NVARCHAR(50)     NOT NULL,
     PremiumAmount      DECIMAL(12,2)    NOT NULL,
@@ -26,13 +26,14 @@ CREATE TABLE policyadmin.Policies (
     EndDate            DATETIME         NOT NULL,
     StatusCode         INT              NOT NULL DEFAULT 1,
     PolicyVersion      INT              NOT NULL DEFAULT 1,
-    RenewalOfPolicyID  UNIQUEIDENTIFIER NULL
+    RenewalOfPolicyID  UNIQUEIDENTIFIER NULL,
+    CONSTRAINT PK_Policies PRIMARY KEY (PolicyID, PolicyVersion)
 );
 GO
 
 CREATE TABLE policyadmin.Coverages (
     CoverageID     UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
-    PolicyID       UNIQUEIDENTIFIER NOT NULL REFERENCES policyadmin.Policies(PolicyID),
+    PolicyID       UNIQUEIDENTIFIER NOT NULL,  -- FK removed: Policies PK is now composite
     CoverageType   NVARCHAR(100)    NOT NULL,
     CoverageLimit  DECIMAL(14,2)    NOT NULL,
     Deductible     DECIMAL(10,2)    NOT NULL DEFAULT 0.00

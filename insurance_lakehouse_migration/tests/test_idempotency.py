@@ -44,13 +44,13 @@ def test_silver_merge_is_idempotent(spark: SparkSession, tmp_path) -> None:
     bronze_df = spark.createDataFrame(bronze_data, schema=_BRONZE_POLICY_SCHEMA)
     path = str(tmp_path / "silver_policies")
 
-    # Run 1 — PolicyID → policy_i_d after pascal_to_snake
+    # Run 1 — PolicyID → policy_id after pascal_to_snake + _normalize_id_columns
     silver1 = silver_policyadmin_policies(bronze_df)
-    merge_or_create(silver1, path, ["policy_i_d", "policy_version"])
+    merge_or_create(silver1, path, ["policy_id", "policy_version"])
 
     # Run 2 (identical input)
     silver2 = silver_policyadmin_policies(bronze_df)
-    merge_or_create(silver2, path, ["policy_i_d", "policy_version"])
+    merge_or_create(silver2, path, ["policy_id", "policy_version"])
 
     result = spark.read.format("delta").load(path)
     assert result.count() == 1  # MERGE must not insert duplicates

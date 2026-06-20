@@ -79,7 +79,6 @@ def test_fact_claims_no_payout_is_null(spark: SparkSession) -> None:
     ])
     empty_schema = StructType([
         StructField("claim_id", IntegerType()),
-        StructField("payout_date", DateType()),
         StructField("payout_amount", DoubleType()),
         StructField("is_correction", BooleanType()),
     ])

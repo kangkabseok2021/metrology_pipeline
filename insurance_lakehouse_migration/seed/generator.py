@@ -71,11 +71,10 @@ def seed_policyadmin(conn) -> tuple[list[dict], list[dict]]:
     policies = []
     for c in customers:
         n = max(1, round(random.gauss(POLICY_MULT, 0.5)))
-        prev = None
+        pid = str(uuid.uuid4())  # same chain UUID for all versions of this policy
         for v in range(1, n + 1):
             start = _rand_date(HORIZON_START, datetime(2024, 6, 1))
             end = start + timedelta(days=365 * random.randint(1, 3))
-            pid = str(uuid.uuid4())
             policies.append(
                 {
                     "PolicyID": pid,
@@ -86,10 +85,9 @@ def seed_policyadmin(conn) -> tuple[list[dict], list[dict]]:
                     "EndDate": end,
                     "StatusCode": random.choices([1, 2, 3], weights=[7, 2, 1])[0],
                     "PolicyVersion": v,
-                    "RenewalOfPolicyID": prev,
+                    "RenewalOfPolicyID": None,  # chain is implicit in shared PolicyID
                 }
             )
-            prev = pid
     conn.execute(
         text(
             "INSERT INTO policyadmin.Policies"
@@ -126,11 +124,9 @@ def seed_policyadmin(conn) -> tuple[list[dict], list[dict]]:
 
 
 def seed_claims(conn, customers: list[dict], policies: list[dict]) -> None:
-    """claims.customer_id is the 1-based rank of customer ordered by CreatedAt."""
-    rank = {
-        c["CustomerID"]: i + 1
-        for i, c in enumerate(sorted(customers, key=lambda x: x["CreatedAt"]))
-    }
+    """claims.customer_id is the 1-based rank of customer ordered by CreatedAt, CustomerID."""
+    sorted_customers = sorted(customers, key=lambda x: (x["CreatedAt"], x["CustomerID"]))
+    rank = {c["CustomerID"]: i + 1 for i, c in enumerate(sorted_customers)}
     events = []
     for p in policies:
         if random.random() > CLAIM_RATE:

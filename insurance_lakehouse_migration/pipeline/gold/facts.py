@@ -17,16 +17,18 @@ def build_fact_claims(
     """
     Join claim_events + payouts to dim_policy (current rows), dim_customer (by claims_seq_id),
     and dim_date (by event_date). fact_claims has one row per claim event.
+    Payouts are aggregated first to avoid fan-out on correction records.
     """
     current_policies = dim_policy.filter(F.col("is_current")).select("policy_sk", "policy_id")
 
+    payouts_agg = payouts_silver.groupBy("claim_id").agg(
+        F.sum("payout_amount").alias("payout_amount"),
+        F.max("is_correction").cast("boolean").alias("has_correction"),
+    )
+
     return (
         claims_silver.alias("ce")
-        .join(
-            payouts_silver.select("claim_id", "payout_amount", "is_correction").alias("p"),
-            F.col("ce.claim_id") == F.col("p.claim_id"),
-            "left",
-        )
+        .join(payouts_agg.alias("p"), F.col("ce.claim_id") == F.col("p.claim_id"), "left")
         .join(current_policies.alias("dp"), F.col("ce.policy_id") == F.col("dp.policy_id"), "left")
         .join(
             dim_customer.select("customer_sk", "claims_seq_id").alias("dc"),
@@ -49,7 +51,7 @@ def build_fact_claims(
             F.col("ce.claim_type"),
             F.col("ce.status"),
             F.col("p.payout_amount"),
-            F.col("p.is_correction"),
+            F.col("p.has_correction"),
         )
     )
 
