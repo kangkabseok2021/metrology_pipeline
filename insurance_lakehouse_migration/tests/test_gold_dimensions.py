@@ -6,20 +6,42 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from pyspark.sql import Row, SparkSession
+from pyspark.sql import SparkSession
+from pyspark.sql.types import (
+    DateType,
+    DoubleType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
+
+_POLICY_SCHEMA = StructType([
+    StructField("policy_id", StringType()),
+    StructField("customer_id", StringType()),
+    StructField("policy_type", StringType()),
+    StructField("premium_amount", DoubleType()),
+    StructField("start_date", DateType()),
+    StructField("end_date", DateType()),
+    StructField("status_code", IntegerType()),
+    StructField("policy_version", IntegerType()),
+    StructField("renewal_of_policy_id", StringType()),
+])
 
 
 def _make_policies(spark: SparkSession):
     return spark.createDataFrame([
-        Row(policy_id="p1", customer_id="c1", policy_type="Home", premium_amount=500.0,
-            start_date=date(2022, 1, 1), end_date=date(2023, 1, 1), status_code=1,
-            policy_version=1, renewal_of_policy_id=None),
-        Row(policy_id="p1", customer_id="c1", policy_type="Home", premium_amount=550.0,
-            start_date=date(2023, 1, 1), end_date=date(2024, 1, 1), status_code=1,
-            policy_version=2, renewal_of_policy_id="old"),
-    ])
+        (
+            "p1", "c1", "Home", 500.0,
+            date(2022, 1, 1), date(2023, 1, 1), 1, 1, None,
+        ),
+        (
+            "p1", "c1", "Home", 550.0,
+            date(2023, 1, 1), date(2024, 1, 1), 1, 2, "old",
+        ),
+    ], _POLICY_SCHEMA)
 
 
 def test_dim_policy_scd2_has_two_rows(spark: SparkSession) -> None:

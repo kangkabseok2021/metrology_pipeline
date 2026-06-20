@@ -59,13 +59,15 @@ def validate_gold_tables(
             details.append(f"fact_premiums.{col}: {n} null FK values")
 
     if "policy_sk" in fact_claims.columns:
-        orphans = (~fact_claims["policy_sk"].isin(valid_sks)).sum()
+        non_null = fact_claims["policy_sk"].dropna()
+        orphans = (~non_null.isin(valid_sks)).sum()
         if orphans > 0:
             failures += 1
             details.append(f"fact_claims: {orphans} orphaned policy_sk values")
 
     if "policy_sk" in fact_premiums.columns:
-        orphans = (~fact_premiums["policy_sk"].isin(valid_sks)).sum()
+        non_null = fact_premiums["policy_sk"].dropna()
+        orphans = (~non_null.isin(valid_sks)).sum()
         if orphans > 0:
             failures += 1
             details.append(f"fact_premiums: {orphans} orphaned policy_sk values")
