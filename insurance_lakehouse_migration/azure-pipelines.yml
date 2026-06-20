@@ -1,0 +1,87 @@
+# Azure DevOps Pipeline — Insurance Enterprise Data Platform
+# Production reference: lint → unit tests → full Bronze→Gold integration run → quality gate
+# Not executed by GitHub Actions CI; documents the Databricks-targeted pipeline.
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include: [insurance_lakehouse_migration/**]
+
+variables:
+  PYTHON_VERSION: "3.12"
+  GOLD_PATH: "$(Pipeline.Workspace)/data/gold"
+
+stages:
+  - stage: Lint
+    jobs:
+      - job: ruff
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: "$(PYTHON_VERSION)" }
+          - script: pip install uv && uv sync --group dev --no-install-project
+            displayName: Install deps
+          - script: uv run ruff check .
+            displayName: ruff lint
+
+  - stage: UnitTest
+    dependsOn: Lint
+    jobs:
+      - job: pytest_offline
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: "$(PYTHON_VERSION)" }
+          - script: pip install uv && uv sync --group dev --no-install-project
+            displayName: Install deps
+          - script: uv run pytest tests/ -v --tb=short -m "not integration"
+            displayName: Offline tests (pure-Python + PySpark, no SQL Server)
+
+  - stage: IntegrationTest
+    dependsOn: UnitTest
+    jobs:
+      - job: full_pipeline
+        pool:
+          vmImage: ubuntu-latest
+        services:
+          sqlserver:
+            image: mcr.microsoft.com/mssql/server:2022-latest
+            env:
+              SA_PASSWORD: $(SA_PASSWORD)
+              ACCEPT_EULA: "Y"
+              MSSQL_PID: Developer
+            ports: ["1433:1433"]
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: "$(PYTHON_VERSION)" }
+          - script: pip install uv && uv sync --group dev --no-install-project
+            displayName: Install deps
+          - script: |
+              MSSQL_URL="mssql+pymssql://sa:$(SA_PASSWORD)@localhost:1433/InsuranceDB" \
+              uv run python -m seed.generator
+            displayName: Seed SQL Server
+          - script: |
+              JDBC_URL="jdbc:sqlserver://localhost:1433;databaseName=InsuranceDB;encrypt=true;trustServerCertificate=true" \
+              BRONZE_PATH="$(Pipeline.Workspace)/data/bronze" \
+              SILVER_PATH="$(Pipeline.Workspace)/data/silver" \
+              GOLD_PATH="$(GOLD_PATH)" \
+              uv run python -m pipeline.run_all
+            displayName: Run Bronze → Silver → Gold pipeline
+          - script: GOLD_PATH="$(GOLD_PATH)" uv run python quality/checkpoint.py
+            displayName: Gold quality gate
+
+  - stage: Publish
+    dependsOn: IntegrationTest
+    condition: succeeded()
+    jobs:
+      - job: publish_artifacts
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: insurance_lakehouse_migration/docs
+              artifactName: docs-$(Build.BuildId)

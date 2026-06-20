@@ -227,3 +227,25 @@ jobs:
 
       - name: Airflow DAG syntax check
         run: uv run pytest tests/test_generation.py::test_airflow_dag_compiles -v
+
+  insurance-lakehouse:
+    name: Insurance Lakehouse Migration — ruff + pytest (pure-Python + PySpark offline)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: insurance_lakehouse_migration
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install Python deps (main + dev group)
+        run: uv sync --group dev --no-install-project
+
+      - name: ruff lint
+        run: uv run ruff check .
+
+      - name: Run offline tests (no SQL Server required)
+        run: uv run pytest tests/ -v --tb=short -m "not integration"
