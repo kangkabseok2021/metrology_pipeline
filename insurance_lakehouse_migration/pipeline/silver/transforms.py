@@ -96,11 +96,11 @@ _parse_date_udf = F.udf(parse_ddmmyyyy)
 
 
 def silver_billing_invoices(df: DataFrame) -> DataFrame:
-    """Convert DD/MM/YYYY invoice_date and due_date → ISO date."""
+    """Convert DD/MM/YYYY invoice_date and due_date → ISO date (NULL on invalid input)."""
     return (
         df
-        .withColumn("invoice_date", F.to_date(F.col("invoice_date"), "dd/MM/yyyy"))
-        .withColumn("due_date", F.to_date(F.col("due_date"), "dd/MM/yyyy"))
+        .withColumn("invoice_date", F.try_to_date(F.col("invoice_date"), "dd/MM/yyyy"))
+        .withColumn("due_date", F.try_to_date(F.col("due_date"), "dd/MM/yyyy"))
         .drop("_source_system", "_ingested_at")
     )
 
@@ -108,6 +108,6 @@ def silver_billing_invoices(df: DataFrame) -> DataFrame:
 def silver_billing_payments(df: DataFrame) -> DataFrame:
     return (
         df
-        .withColumn("payment_date", F.to_date(F.col("payment_date"), "dd/MM/yyyy"))
+        .withColumn("payment_date", F.try_to_date(F.col("payment_date"), "dd/MM/yyyy"))
         .drop("_source_system", "_ingested_at")
     )
